@@ -91,3 +91,5 @@ DESC departments;
 
 SELECT  *
 FROM    departments; -- 27rows
+
+-
