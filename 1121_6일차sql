@@ -1,0 +1,301 @@
+-- NULL 처리(p.15)
+-- 값이
+SELECT location_id, street_address, city, state_province
+FROM locations
+WHERE state_province LIKE '%';
+
+-- 1. locations 테이블의 구조
+DESC locations;
+
+-- 2. locations 데이터 조회
+SELECT *
+FROM locations; -- 위치 코드 : 1000번 100씩 증가
+
+-- 3. employees 데이터 조회
+SELECT *
+FROM employees;
+
+[예제2-37] locations 테이블에서 위치코드, 도로주소, 주를 조회하시오
+SELECT location_id, loc_id, street_address addr, state_province state
+FROM locations;
+
+-- is NULL : 컬럼이 NULL인 조건
+-- is not NULL : 컬럼의 데이터가 NULL이 아닐 때 조건
+
+SELECT location_id loc_id, street_address addr , state_province state
+FROM locations
+WHERE state_province IS NOT NULL; -- (o)
+-- WHERE state_province = NULL --(x)
+
+-- 사원 테이블 employees 조회
+-- 총 사원 수 : 107 rows
+SELECT *
+FROM employees
+WHERE commission_pct IS NULL; -- 50 rows
+
+-- 매니저가 필요없는 사람 : 사장
+SELECT *
+FROM employees
+WHERE manager_id IS NULL; -- boss
+
+SELECT *
+FROM employees
+WHERE department_id IS NULL;
+
+-- 2-4. 데이터정렬
+-- ORDER BY 컬럼 [ASC | DESC] : 특정 컬럼을 오름차순(Ascending) 또는 내림차순(Desending)으로 저렬
+-- 기본값은 ASC(작은 수 --> 큰 수 방향, 생략가능)
+SELECT *
+FROM employees
+WHERE department_id IS NOT NULL
+ORDER BY employee_id DESC; -- 사원 코드를 ASC로 정렬시킴
+
+[예제2-40] 80번 부서의 사원정보 중 이름을 기준으로 오름차순 정렬하시오
+SELECT employee_id, first_name, department_id
+FROM employees
+WHERE department_id = 80;
+-- ORDER BY first_name;
+-- ORDER BY first_name ASC
+-- ORDER BY first_name asc;
+ORDER BY first_name desc;
+-- ===========================================
+-- ORDER BY 절이 Alias를 사용하여 정렬할 수 있다.
+-- ===========================================
+
+[예제2-42] 60번 부서의 사원정보에 대해 년 급여(=연봉, annual salary를 오름차순으로 정렬하시오
+-- salary : 월 급여 vs annual salary : 연봉 (= 실제 존재x) <--> salary *12 "annual salary"(=Alias)
+SELECT employee_id, first_name, job_id, hire_date, salary * 12 annual_salary, department_id
+FROM employees
+WHERE department_id = 60;
+ORDER BY annual_salary; -- 기본 ASC
+
+-- ===========================================
+-- ORDER BY 절이 (결과)컬럼의 위치를 사용하여 정렬할 수 있다.
+-- ===========================================
+
+SELECT employee_id, first_name, job_id, hire_date, salary * 12 annual_salary, department_id
+FROM employees
+WHERE department_id = 60
+ORDER BY 5; -- 기본 ASC
+
+[예제2-43] 사원테이블에서 부서는 오름차순, 월 급여는 내림차순으로 정렬하시오
+SELECT employee_id, last_name, salary, department_id
+FROM employees
+-- ORDER BY department_id ASC, salary DESC; -- 컬럼이름
+-- ORDER BY dept_id ASC, mon_sal DESC; -- 컬럼의 Alias
+ORDER BY 4 ASC, 3 DESC; -- 컬럼의 번호
+
+-- F10 : 여러 테이블을 이용해 JOIN 연산할 때 시간소요, 복잡도 등을 오라클엔진이 어떻게 처리하는지 들여다보는 단축키
+
+1. 사번이 200인 사람의 이름과 부서번호를 조회하시오
+-- (조건컬럼)
+SELECT employee_id emp_id, first_name||' '||last_name full_name
+FROM employees
+WHERE employee_id = 200; -- 200	Jennifer Whalen
+
+-- 2. 급여가 3000에서 15000 사이에 포함되지 않는 사원의 사번, 이름, 급여 정보를 조회하시오
+-- (단, 이름은 이름과 성 사이에 공백을 두어 합쳐서 조회)
+SELECT employee_id, first_name||' '||last_name full_name, salary
+FROM employees
+ -- WHERE salary BETWEEN 3000 AND 15000;
+WHERE salary < 3000
+OR salary > 15000;
+
+-- 3. 부서번호가 30과 60에 소속된 사원의 사번, 이름, 부서번호, 급여를 조회하시오
+-- (이름은 알파벳 순서로 정렬하여 조회할 것)
+
+SELECT employee_id, first_name, department_id, salary
+FROM employees
+WHERE department_id IN(30, 60)
+--WHERE department_id = 30
+--OR department_id = 60; -- 11 row
+ORDER BY first_name ASC;
+
+-- 4. 급여가 3000에서 15000사이 이면서, 부서 번호가 30 또는 60에 소속된 사원의 사번, 이름, 급여를 조회하는 쿼리를 작성
+-- 단, 이름과 성을 합쳐서 name으로, 월급여는 Monthly Salary로 조회되게 한다.
+
+SELECT employee_id, first_name||' '||last_name, salary "Monthly Salary", department_id
+FROM employees
+WHERE salary BETWEEN 3000 AND 15000
+AND department_id IN (30, 60);
+
+-- 5. 소속된 부서번호가 없는 사원의 사번, 이름, 업무 ID를 조회하시오
+SELECT employee_id, first_name, job_id
+FROM employees
+WHERE department_id IS NULL; -- 1 rows
+
+-- 6. 커미션을 받는 사원 중 사원이 사번, 이름, 급여, 커미션을 조회하는데 커미션이 높은 사원부터 낮은 사원 순서로 정렬하시오
+SELECT employee_id, first_name, salary, commission_pct
+FROM employees
+WHERE commission_pct IS NOT NULL
+ORDER BY 4 DESC; -- 내림차순, 35 rows
+
+-- 7. 이름에 문자 z가 포함된 사원의 사번과 이름을 조회하시오
+SELECT employee_id, first_name
+FROM employees
+WHERE first_name LIKE '%z%';
+
+
+-- 3장. 기본함수
+-- 오라클이 제공하는 함수 vs 사용자가 작성하는함수 : PL/SQL에서 Function(=기능)
+-- 내장함수
+-- 함수 : 어떠한 명령 처리 코드가 포함된 객체 vs 변수 : 메모리에 데이터를 저장하기 위한 어떤 공간
+-- 메소드
+-- syso +[CTRL+SPACE] : 자동완성 --> System 객체이 있는 outprintln()
+--  단일 행 vs 다중 행 함수
+-- 함수에 사용하는 파라미터와 반환되는 값의 유형에 따라 함수를 구분한다.
+-- dual :가짜 테이블, dummy 테이블로 표현식의 결과값을 알아보고자 할 때 유용하다.
+
+-- 3.1 숫자함수
+-- ABS(n) : 함수 내부에 전달하는 값 n은 파라미터라고 읽습니다. Absolute 절대값 표현결과
+[예제3-1]
+SELECT ABS(32) ABS1,
+        ABS(-32) ABS2
+FROM udal
+
+-- SIGN(N) : 함수 내부에 전달하는 N이 양수인지, 음수인지 여부를 판단하고 그 결과를 반환하는 함수
+-- n이 양수면 1을, 음수면 -1을, 0이면 0을 반환한다.
+SELECT SIGN(32), SIGN(-32), SIGN(0)
+FROM dual;
+
+-- CPS(n) : 각도에 대한 Cosign 값 계산 결과를 반환
+-- TAN(n) : 각도에 대한 Tangent 값 계산 결과를 반환
+-- 수학관련 함수들이 더 많이 있음
+
+-- ROUND(n [,i]) : n을 소수점 1번째 자리로 반올림한 결과를반환하는 함수
+-- i는 표현할 소수점 아래 자릿수
+-- i를 생략하면 i값을 0으로 인식하여, 반올림한다. 즉 ROUND(n,0)은  ROUND(n)과 같은 결과를 나타낸다.
+[예제3-3]
+SELECT ROUND(127.65678) R1,
+       ROUND(123.4567, 1) R2,
+       ROUND(123.5567, -1) R3
+FROM dual;
+
+-- TRUNC(,i) : ROUND 함수와 같은 방식이지만, 버림한 결과를 반환하는 함수
+-- ROUND(반올림) vs TRUNC(버림)
+-- TRUNCATE TABLE 테이블명 : 테이블의 데이터를 모두 버림(=삭제) (단, 구조/컬럼은 남김)
+[예제3-5]
+SELECT TRUNC(123.456789) T1,
+       TRUNC(123.456789, 2) T2,
+       TRUNC(123.456789, -2) T3,
+       TRUNC(123456.789, -2) T4
+FROM dual;
+
+-- CEILL(n) : n과 같거나 큰 가장 작은 정수 반환하는 함수
+-- 무조건 올림된 결과를 반환하는 함수
+[예제3-6]
+SELECT CEIL(0.12345) c1,
+       CEIL(123.45) c2
+FROM dual;
+
+
+-- FLOOR(n) : n과 같거나 작은 가장 큰정수를 반환하는 함수
+-- 무조건 내림된 결과를 반환하는 함수
+SELECT FLOOR(0.12345) c1,
+       FLOOR(123.45) c2
+FROM dual;
+
+
+-- MOD(m,n) : m을 n으로 나눈 나머지 값을 반환하는 함수
+-- n에 0이 오면, m의 값을 그대로 반환한다.
+-- 프로그래밍 언어 : 0으로 나누면 ==> Zero Divide Error 발생
+SELECT MOD(17, 4) M1, -- 17 = 4 * 4 + 1
+       MOD(17, -4) M2, -- 17 = -4 * -4 + 1
+       MOD(-17, -4) M3, -- -17 = -4 * 4 -1
+       MOD(17, 0) M4 -- 17 = 0 *  + 17
+FROM dual;
+
+
+--[연습문제 3-1]
+-- 1. 사원 테이블에서 100번 부서와 110번 부서의 사원에 대해, 사번, 이름, 급여와 15% 인상된 급여를 조회하는 쿼리를 작성하시오(단, 15% 인상된 급여는 정수로 표시하고 컬럼명은 Increased Salary라고 한다.)
+
+SELECT employee_id, last_name, salary, 
+       ROUND(salary + salary + 0.15) "ROUND1",
+       ROUND(salary + salary + 0.15) "ROUND2",
+       TRUNC(salary + salary + 0.15) "ROUND3",
+       TRUNC(salary + salary + 0.15) "ROUND4",
+       CEIL(salary + salary + 0.15) "ROUND5",
+       FLOOR(salary + salary + 0.15) "ROUND6"
+FROM employees
+WHERE department_id IN (100, 110)
+ORDER BY    1;SELECT MOD(17, 4) M1, -- 17 = 4 * 4 + 1
+       MOD(17, -4) M2, -- 17 = -4 * -4 + 1
+       MOD(-17, -4) M3, -- -17 = -4 * 4 -1
+       MOD(17, 0) M4 -- 17 = 0 *  + 17
+FROM dual;
+
+
+
+
+
+
+
+
+
+
+-- 3.2 문자함수
+-- CONCAT(char1, char2) : 파라미터로 받은 두문자열을 연결하여 결과를 반환하는 함수
+-- || : 문자열 연결 연산자
+[예제3-9]
+SELECT CONCAT('Hello','Oracle') CONCAT1, --문자열 연결 함수를 사용
+       'Hello'||'Oracle' CONCAT2 -- 문자열 연결 연산자를 사용
+FROM dual;
+-- 대, 소문자 함수
+-- INITCAP(char) : 파라미터로 받은 알파벳 단어 단위로 첫 글자를 대문자로 하여 결과를 반환하는 함수
+-- UPPER(cahr) : 파라미터로 받은 알파벳 모두를 대문자화하여 반환하는 함수
+-- LOWER(char) :                          소문자화하여 반환하는 함수
+
+[예제3-10]
+SELECT INITCAP('I am a boy') INIT1,
+       UPPER('I am a boy') UPPER2,
+       LOWER('I am a boy') LOWER3
+FROM dual;
+
+-- LPAD(char, n, [, char2]) : 전체 문자열의 길이 n에서 char1문자열 길이를 뺀 만큼 char2 문자표현으로 왼쪽으로 채워서 반환하는 함수
+-- RPAD(char, n, [, char2]) :                                                             오른쪽으로 
+-- Left, Right 
+-- PAD
+
+-- 제거하고자 하는 문자 [,char] 생략 시 기보값으로 공배군자 한 개가 사용된다.
+-- LTRIM(char1 [,char2]) : 왼쪽에서 char1~char2로 지정한 문자를 제거한 결과를 반환
+[예제3-12]
+SELECT '[' || LTRM('  ABCDEFG  ')|| ']' LTRM1,
+       '[' || LTRM('  ABCDEFG  ',' ')|| ']' LTRM1,
+       LTRIM('ABCDEFG', 'AB') LTRIM3,
+       LTRIM('ABCDEFG', 'BA') LTRIM4,
+       LTRIM('ABCDEFG', 'BC') LTRIM5
+FROM dual;
+-- RTRIM(char1 [,char2]) : 오른쪽에서 char1~char2로 지정한 문자를 제거한 결과를 반환
+[예제3-13]
+SELECT '[' || RTRIM('  ABCDEFG  ')|| ']' RTRIM1,
+       '[' || RTRIM('  ABCDEFG  ',' ')|| ']' RTRIM1,
+       RTRIM('ABCDEFG', 'FG') RTRIM3,
+       RTRIM('ABCDEFG', 'GF') RTRIM4,
+       RTRIM('ABCDEFG', 'G') RTRIM5
+FROM dual;
+
+
+
+
+
+
+
+-- 3.3 날짜함수
+-- 3.4 변환함수
+-- 3.5 NULL 관련 함수
+-- 3.6 DECODE와 CASE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
