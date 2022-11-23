@@ -85,17 +85,42 @@ SELECT TO_CHAR('2013-06-30', 'RRRR/MM/DD') CHAR
 FROM dual;
 
 
+[예제3-27]
+SELECT TO_CHAR(SYSDATE, 'YYYY-MON-DD') FMT1,
+       TO_CHAR(SYSDATE, 'RR/MM/DD HH:MI:SS') FMT2,
+       TO_CHAR(SYSDATE, 'YY-MM-DD DAY') FMT3
+FROM dual;
+
+[예제3-28]
+SELECT TO_CHAR(12345, '9999999') NUM_FMT1,
+       TO_CHAR(12345, '0999999') NUM_FMT2,
+       TO_CHAR(123.45, '$99999.99') NUM_FMT3,
+       TO_CHAR(12345, 'L9,999,999') NUM_FMT4
+FROM dual;
+
+SELECT employee_id, last_name, TO_CHAR(salary * 12, '$9.999.999') "Annual Salary"
+FROM employees
+ORDER BY "Annual Salary" DESC;
 
 
+--TO_NUMBER()
+--  문자를 숫자로 변환하여 그 결과를 반환
+SELECT 1 + '1' SUM
+FROM dual;      -- 묵시적 캐스팅(~자동으로 형식에 맞춰서)
 
+SELECT TO_NUMBER('12345') NUM1,
+       TO_NMBER('123.45') NUM2
+FROM dual;
 
+-- TO DATE(char [,fmt])
+-- 문자 데이터를 날짜 데이터로 벼환한 결과를 반환하는 함수
 
+SELECT TO_DATE('2013-05-27') DATE1,
+       TO_DATE('2013-06-27 11:12:35', 'YYYY/MM/DD HH:MI:SS AM') DATE2
+FROM dual;
 
-
-
-
-
-
+-- 한번만 테스트
+ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY/MM/DD HH:MI:SS';
 
 
 
